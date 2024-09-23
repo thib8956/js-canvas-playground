@@ -19,8 +19,7 @@ function drawCircle(ctx) {
 
 let startTime = undefined;
 
-let circles = [];
-let crosses = [];
+let shapes = [];
 let pendingClicks = [];
 
 function animate(ctx, time) {
@@ -31,28 +30,31 @@ function animate(ctx, time) {
 	for (const evt of pendingClicks) {
 		const h = Math.floor(Math.random() * 255);
 		if (evt.kind == "circle") {
-			circles.push({x: evt.x, y: evt.y, t: time, hue: h});
+			shapes.push({kind: evt.kind, x: evt.x, y: evt.y, t: time, hue: h});
 		} else if (evt.kind == "cross") {
-			crosses.push({x: evt.x, y: evt.y, t: time, hue: h});
+			shapes.push({kind: evt.kind, x: evt.x, y: evt.y, t: time, hue: h});
 		}
 	}
 	pendingClicks = [];
 	
 	ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-	for (const circle of circles) {
-		const dt = time - circle.t;
-		drawAnimatedCircle(ctx, dt, circle.x, circle.y, circle.hue);
-	}
-	
-	for (const cross of crosses) {
-		drawCross(ctx, cross.hue);
+	for (const shape of shapes) {
+		const dt = time - shape.t;
+        switch (shape.kind) {
+            case "circle": 
+                drawAnimatedCircle(ctx, dt, shape.x, shape.y, shape.hue);
+                break;
+            case "cross":
+                drawAnimatedCross(ctx, dt, shape.x, shape.y, shape.hue);
+                break;
+        }
 	}
 	
 	window.requestAnimationFrame(time => animate(ctx, time));
 }
 
 function drawAnimatedCircle(ctx, dt, x, y, hue) {
-	const end = dt*((2*Math.PI) / 1000);
+	const end = dt*2*Math.PI/500;
 	ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, 50, 0, Math.min(end, 2*Math.PI));
@@ -61,6 +63,28 @@ function drawAnimatedCircle(ctx, dt, x, y, hue) {
 	ctx.lineWidth = 5;
     ctx.stroke();
     ctx.restore();
+}
+
+function drawAnimatedCross(ctx, dt, x, y, hue) {
+    startPoint = { x: x-50, y: y-50 };
+    ctx.beginPath();
+    ctx.moveTo(startPoint.x, startPoint.y);
+
+    delta = 100*dt/250;
+    if (delta < 100) { // draw \
+        d = Math.min(delta, 100);
+        ctx.lineTo(startPoint.x + d, startPoint.y + d);
+    } else { // draw /
+        ctx.lineTo(startPoint.x + 100, startPoint.y + 100); // keep \ drawn
+        ctx.moveTo(startPoint.x + 100, startPoint.y);
+        d = Math.min(delta-100, 100);
+        ctx.lineTo(startPoint.x +100 - d, startPoint.y + d);
+    }
+
+    ctx.lineWidth = 5;
+	const percent = Math.trunc(100*Math.min(delta, 100)/100);
+	ctx.strokeStyle = `hsla(${hue}, ${percent}%, 50%, 1)`;
+    ctx.stroke();
 }
 
 function resizeCanvas(ctx) {
