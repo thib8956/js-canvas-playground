@@ -5,6 +5,18 @@ export function lerp(a, b, p) {
     };
 }
 
+export function quadraticBezier(a, b, c, res=0.05) {
+    const eps = 0.001; // to prevent issues with float comparaison (p <= 1)
+    const curve = [];
+    for (let p = 0; p - 1 < eps; p += res) {
+        const ab = lerp(a, b, p); 
+        const bc = lerp(b, c, p);
+        const abc = lerp(ab, bc, p);
+        curve.push(abc);
+    }
+    return curve;
+}
+
 export function cubicBezier(a, b, c, d, res=0.05) {
     const eps = 0.001; // to prevent issues with float comparaison (p <= 1)
     const curve = [];
