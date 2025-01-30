@@ -1,4 +1,4 @@
-const canvas = document.getElementById("game") as HTMLCanvasElement | null;
+const canvas = document.getElementById("canvas") as HTMLCanvasElement | null;
 if (!canvas) throw new Error("unable to get canvas HTML element");
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null;
 if (!ctx) throw new Error("unable to get canvas 2D context");
