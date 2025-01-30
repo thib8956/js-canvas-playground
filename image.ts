@@ -5,7 +5,7 @@ if (!ctx) throw new Error("unable to get canvas 2D context");
 
 const img = new Image();
 img.crossOrigin = "anonymous";
-img.src = "/rose.png";
+img.src = "rose.png";
 img.onload = () => {
     /*canvas.offscreenCanvas = document.createElement("canvas");
     canvas.offscreenCanvas.height = img.height;
