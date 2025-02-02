@@ -35,7 +35,17 @@ function init() {
     const bezier = cubicBezier(...points);
     drawCurve(ctx, bezier);
 
-    canvas.onmousedown = (evt) => {
+    canvas.ontouchstart = (evt: TouchEvent) => {
+        console.assert(evt.touches.length === 1, "Multiple touch points are not supported");
+        const { clientX, clientY } = evt.touches[0];
+        for (const p of points) {
+            if (Math.abs(p.x - clientX) < 10 && Math.abs(p.y - clientY) < 10) {
+                selection = points.indexOf(p);
+            }
+        }
+    };
+
+    canvas.onmousedown = (evt: MouseEvent) => {
         const { clientX, clientY } = evt;
         for (const p of points) {
             if (Math.abs(p.x - clientX) < 10 && Math.abs(p.y - clientY) < 10) {
@@ -44,7 +54,22 @@ function init() {
         }
     };
 
-    canvas.onmousemove = (evt) => {
+    canvas.ontouchmove = (evt: TouchEvent) => {
+        console.assert(evt.touches.length === 1, "Multiple touch points are not supported");
+        const { clientX, clientY } = evt.touches[0];
+        if (selection !== undefined) {
+            points[selection].x = clientX;
+            points[selection].y = clientY;
+            // redraw
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            const bezier = cubicBezier(...points);
+            drawCurve(ctx, bezier);
+            drawPoints(ctx, points);
+        }
+    };
+
+
+    canvas.onmousemove = (evt: MouseEvent) => {
         if (selection !== undefined) {
             points[selection].x = evt.clientX;
             points[selection].y = evt.clientY;
@@ -55,6 +80,11 @@ function init() {
             drawPoints(ctx, points);
         }
     };
+
+    canvas.ontouchend = () => {
+        selection = undefined;
+    };
+
 
     canvas.onmouseup = () => {
         selection = undefined;
