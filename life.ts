@@ -1,8 +1,22 @@
+import { Point } from "./common.js"
+
 const SCALE = 4;
 
 const times: number[] = [];
 let fps: number;
 
+
+function addCells(p: Point, state: number[], gridWidth: number) {
+    const x = Math.floor(p.x / SCALE);
+    const y = Math.floor(p.y / SCALE);
+    for (let i=-5; i < 5; i++) {
+        for (let j=-5; j < 5; j++) {
+            if (/*Math.random() * 2 < 1*/true) {
+                state[(y + j) * gridWidth + x + i] = 1; 
+            }
+        }
+    }
+}
 
 function init() {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement | null;
@@ -17,7 +31,6 @@ function init() {
     const gridWidth = Math.floor(ctx.canvas.width / SCALE)
     const gridHeight = Math.floor(ctx.canvas.height / SCALE)
 
-
     const cells = new Array(gridWidth * gridHeight)
     cells.fill(0)
 
@@ -25,6 +38,17 @@ function init() {
     state.fill(0)
 
     for (let i=0; i < gridWidth * gridHeight; i++) state[i] = +(Math.random() * 4 < 1)
+
+    canvas.addEventListener("click", (evt) => {
+        addCells({ x: evt.clientX, y: evt.clientY }, state, gridWidth);
+    });
+
+    canvas.ontouchstart = (evt: TouchEvent) => {
+        for (const e of evt.touches) {
+            addCells({ x: e.clientX, y: e.clientY }, state, gridWidth);
+        }
+    };
+
 
     window.requestAnimationFrame(t => update(ctx, cells, state));
 }
