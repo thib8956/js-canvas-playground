@@ -1,18 +1,7 @@
 import { Point, resizeCanvas } from "./common.js"
 
-const WIDTH = 800;
-const HEIGHT = 600;
-const SCALING = 4;
-const DIRECTIONS: Point[] = [
-    { x: 0, y: -1},   // N
-    { x: -1, y: -1},  // NW
-    { x: 1, y: -1},   // NE
-    { x: -1, y: 0},   // W
-    { x: 1, y: 0},    // E
-    { x: 0, y: 1},    // S
-    { x: -1, y: 1},   // SW
-    { x: 1, y: 1},    // SE
-]
+let WIDTH = 800;
+let HEIGHT = 600;
 
 function add2(p1: Point, p2: Point) {
     return { x: p1.x + p2.x, y: p1.y + p2.y };
@@ -28,15 +17,17 @@ function init() {
     ctx.canvas.width  = WIDTH
     ctx.canvas.height = HEIGHT
 
-    const cells = new Array(WIDTH * HEIGHT / SCALING)
+
+    const cells = new Array(WIDTH * HEIGHT)
     cells.fill(0)
 
-    const state = new Array(WIDTH * HEIGHT / SCALING)
+    const state = new Array(WIDTH * HEIGHT)
     state.fill(0)
 
-    for (let i=0; i < WIDTH * HEIGHT / SCALING; i++) state[i] = +(Math.random() * 4 < 1)
+    for (let i=0; i < WIDTH * HEIGHT; i++) state[i] = +(Math.random() * 4 < 1)
 
-    console.log(state.length)
+    canvas.addEventListener("click", (evt) => {
+    });
 
     //window.addEventListener('resize', () => resizeCanvas(ctx));
     window.requestAnimationFrame(t => update(ctx, cells, state));
@@ -45,31 +36,34 @@ function init() {
 // update loop, called every frame
 function update(ctx: CanvasRenderingContext2D, cells: number[], state: number[]) {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    for (let i=0; i < WIDTH * HEIGHT / SCALING; i++) cells[i] = state[i];
+    for (let i=0; i < WIDTH * HEIGHT; i++) cells[i] = state[i];
 
-    const cell = (p: Point) => cells[p.y*WIDTH/SCALING + p.x]
+    //const cell = (p: Point) => cells[p.x*WIDTH+ p.y];
 
     ctx.beginPath(); // batch draw calls, only once per frame
     ctx.fillStyle = "white";
     for (let y=1; y < HEIGHT - 1; y++) {
         for (let x=1; x < WIDTH - 1; x++) {
-            const p = { x, y };
+            const pos = WIDTH * y + x;
             // count neighbors
-            let neighbors = 0;
-            for (const d of DIRECTIONS) {
-                const pos = add2(p, d);
-                neighbors += cell(pos);
-            }
-
-            if (cell(p) == 1) {
-                state[p.y*WIDTH/SCALING+p.x] = +(neighbors == 2 || neighbors == 3)
+            const n = cells[pos - 1 - WIDTH]
+                       + cells[pos     - WIDTH]
+                       + cells[pos + 1 - WIDTH]
+                       + cells[pos - 1]
+                       + cells[pos + 1]
+                       + cells[pos - 1 + WIDTH]
+                       + cells[pos     + WIDTH]
+                       + cells[pos + 1 + WIDTH];
+            const cell = cells[pos];
+            if (cell == 1) {
+                state[pos] = +(n == 2 || n == 3)
             } else {
-                state[p.y*WIDTH/SCALING+p.x] = +(neighbors == 3)
+                state[pos] = +(n == 3)
             }
 
-            if (cell(p) == 1) {
-                ctx.moveTo(p.x, p.y);
-                ctx.rect(p.x, p.y, SCALING, SCALING);
+            if (cell == 1) {
+                ctx.moveTo(x, y);
+                ctx.rect(x, y, 1, 1);
             }
         }
     }
