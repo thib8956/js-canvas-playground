@@ -1,17 +1,8 @@
-import { Point, resizeCanvas, drawCircle, drawLine, cubicBezier, quadraticBezier } from "./common.js"
+import { 
+    Point, resizeCanvas, drawCircle, drawLine, 
+    cubicBezier, quadraticBezier, drawCurve, drawPoints
+} from "./common.js"
 
-function drawPoints(ctx: CanvasRenderingContext2D, points: Point[]) {
-    for (const p of points) {
-        drawCircle(ctx, p, 2, 0xFF00FF);
-    }
-}
-
-
-function drawCurve(ctx: CanvasRenderingContext2D, curve: Point[]) {
-    for (let i=0; i < curve.length - 1; ++i) {
-        drawLine(ctx, curve[i], curve[i+1], 0xFFFFFF);
-    }
-}
 
 function draw(ctx: CanvasRenderingContext2D, points: Point[]) {
     let start = 0;
@@ -126,4 +117,3 @@ function init() {
 }
 
 init();
-

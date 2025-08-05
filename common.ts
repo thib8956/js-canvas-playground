@@ -79,3 +79,15 @@ export function drawDashedLine(ctx: CanvasRenderingContext2D, start: Point, end:
     drawLine(ctx, start, end, color, true);
 }
 
+export function drawPoints(ctx: CanvasRenderingContext2D, points: Point[]) {
+    for (const p of points) {
+        drawCircle(ctx, p, 2, 0xFF00FF);
+    }
+}
+
+export function drawCurve(ctx: CanvasRenderingContext2D, curve: Point[]) {
+    for (let i=0; i < curve.length - 1; ++i) {
+        drawLine(ctx, curve[i], curve[i+1], 0xFFFFFF);
+    }
+}
+
