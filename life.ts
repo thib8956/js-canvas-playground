@@ -1,11 +1,4 @@
-import { Point, resizeCanvas } from "./common.js"
-
-let WIDTH = 800;
-let HEIGHT = 600;
-
-function add2(p1: Point, p2: Point) {
-    return { x: p1.x + p2.x, y: p1.y + p2.y };
-}
+const SCALE = 4;
 
 function init() {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement | null;
@@ -14,46 +7,47 @@ function init() {
     const ctx = canvas.getContext("2d", { alpha: false }) as CanvasRenderingContext2D | null;
     if (!ctx) throw new Error("unable to get canvas 2D context");
 
-    ctx.canvas.width  = WIDTH
-    ctx.canvas.height = HEIGHT
+    ctx.canvas.width  = window.innerWidth
+    ctx.canvas.height = window.innerHeight
+
+    const gridWidth = Math.floor(ctx.canvas.width / SCALE)
+    const gridHeight = Math.floor(ctx.canvas.height / SCALE)
 
 
-    const cells = new Array(WIDTH * HEIGHT)
+    const cells = new Array(gridWidth * gridHeight)
     cells.fill(0)
 
-    const state = new Array(WIDTH * HEIGHT)
+    const state = new Array(gridWidth * gridHeight)
     state.fill(0)
 
-    for (let i=0; i < WIDTH * HEIGHT; i++) state[i] = +(Math.random() * 4 < 1)
+    for (let i=0; i < gridWidth * gridHeight; i++) state[i] = +(Math.random() * 4 < 1)
 
-    canvas.addEventListener("click", (evt) => {
-    });
-
-    //window.addEventListener('resize', () => resizeCanvas(ctx));
     window.requestAnimationFrame(t => update(ctx, cells, state));
 }
 
 // update loop, called every frame
 function update(ctx: CanvasRenderingContext2D, cells: number[], state: number[]) {
-    ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    for (let i=0; i < WIDTH * HEIGHT; i++) cells[i] = state[i];
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    //const cell = (p: Point) => cells[p.x*WIDTH+ p.y];
+    const gridWidth = Math.floor(ctx.canvas.width / SCALE)
+    const gridHeight = Math.floor(ctx.canvas.height / SCALE)
+
+    for (let i=0; i < gridWidth * gridHeight; i++) cells[i] = state[i];
 
     ctx.beginPath(); // batch draw calls, only once per frame
     ctx.fillStyle = "white";
-    for (let y=1; y < HEIGHT - 1; y++) {
-        for (let x=1; x < WIDTH - 1; x++) {
-            const pos = WIDTH * y + x;
+    for (let y=1; y < gridHeight - 1; y++) {
+        for (let x=1; x < gridWidth - 1; x++) {
+            const pos = gridWidth * y + x;
             // count neighbors
-            const n = cells[pos - 1 - WIDTH]
-                       + cells[pos     - WIDTH]
-                       + cells[pos + 1 - WIDTH]
+            const n = cells[pos - 1 - gridWidth]
+                       + cells[pos     - gridWidth]
+                       + cells[pos + 1 - gridWidth]
                        + cells[pos - 1]
                        + cells[pos + 1]
-                       + cells[pos - 1 + WIDTH]
-                       + cells[pos     + WIDTH]
-                       + cells[pos + 1 + WIDTH];
+                       + cells[pos - 1 + gridWidth]
+                       + cells[pos     + gridWidth]
+                       + cells[pos + 1 + gridWidth];
             const cell = cells[pos];
             if (cell == 1) {
                 state[pos] = +(n == 2 || n == 3)
@@ -62,8 +56,8 @@ function update(ctx: CanvasRenderingContext2D, cells: number[], state: number[])
             }
 
             if (cell == 1) {
-                ctx.moveTo(x, y);
-                ctx.rect(x, y, 1, 1);
+                ctx.moveTo(x * SCALE, y * SCALE);
+                ctx.rect(x * SCALE, y * SCALE, SCALE, SCALE);
             }
         }
     }
@@ -73,3 +67,4 @@ function update(ctx: CanvasRenderingContext2D, cells: number[], state: number[])
 }
 
 init();
+
