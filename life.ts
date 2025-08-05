@@ -1,5 +1,9 @@
 const SCALE = 4;
 
+const times: number[] = [];
+let fps: number;
+
+
 function init() {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement | null;
     if (!canvas) throw new Error("unable to get canvas HTML element");
@@ -62,6 +66,20 @@ function update(ctx: CanvasRenderingContext2D, cells: number[], state: number[])
         }
     }
     ctx.fill(); // draw only once per frame
+
+    const now = performance.now();
+    while (times.length > 0 && times[0] <= now - 1000) {
+      times.shift();
+    }
+    times.push(now);
+    fps = times.length;
+
+    ctx.save();
+    ctx.fillStyle = "red";
+    ctx.font = "bold 48px sans-serif";
+    ctx.shadowColor = "white";
+    ctx.fillText("" + fps, 10, 50);
+    ctx.restore();
 
     window.requestAnimationFrame(t => update(ctx, cells, state));
 }
