@@ -61,12 +61,18 @@ const HEAD_COLOR = 0xf43f5e;
 const TAIL_COLOR = 0xf4c3cc;
 const APPLE_COLOR = 0x58f474;
 
+const DIRECTIONS = {
+  up: new Vec2d(0, -1),
+  down: new Vec2d(0, 1),
+  left: new Vec2d(-1, 0),
+  right: new Vec2d(1, 0)
+}
+
 // state
 let snake_body = [new Vec2d(100, 100), new Vec2d(100 - SEGMENT_SPACING, 100), new Vec2d(100 - SEGMENT_SPACING * 2, 100)];
 let apple: Vec2d | undefined = undefined;
-let velocity: Vec2d = new Vec2d(1, 0); // unit vector. Start by moving right
+let velocity: Vec2d = new Vec2d(0, 0); // unit vector
 let speed = 200; // px/s
-
 let interpolation_factor = 10;
 
 function resizeCanvas(ctx: CanvasRenderingContext2D) {
@@ -116,6 +122,7 @@ function update(ctx: CanvasRenderingContext2D, t: number) {
     const { x: lastX, y: lastY } = snake_body[snake_body.length - 1];
     snake_body.push(new Vec2d(lastX, lastY));
     speed += 10;
+    setStatusLine(`speed = ${speed}`)
   }
 
   // draw apple
@@ -127,7 +134,7 @@ function update(ctx: CanvasRenderingContext2D, t: number) {
     // draw a trail of overlapping circles by interpolating between the body positions
     for (let j = 0; j < interpolation_factor; ++j) {
       const pos = snake_body[i].lerp(snake_body[i + 1], j / interpolation_factor).wrap(bounds);
-      const color = lerpColor(HEAD_COLOR, TAIL_COLOR, (i + interpolation_factor / 10) / snake_body.length)
+      const color = lerpColor(HEAD_COLOR, TAIL_COLOR, (i + j / interpolation_factor) / snake_body.length)
       drawCircle(ctx, pos, SNAKE_SIZE / 2, `#${color.toString(16)}`)
     }
   }
@@ -157,9 +164,9 @@ function init() {
   if (!canvas) throw new Error("unable to get canvas HTML element");
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null;
   if (!ctx) throw new Error("unable to get canvas 2D context");
+  resizeCanvas(ctx);
 
   apple = getRandomPos(canvas.width, canvas.height)
-  resizeCanvas(ctx);
 
   canvas.onmousemove = () => {};
 
@@ -168,14 +175,14 @@ function init() {
   window.onkeydown = (evt) => {
     let new_direction: Vec2d | undefined;
     switch (evt.key) {
-      case "z": new_direction = new Vec2d(0, -1); break;
-      case "s": new_direction = new Vec2d(0, 1); break;
-      case "q": new_direction = new Vec2d(-1, 0); break;
-      case "d": new_direction = new Vec2d(1, 0); break;
+      case "ArrowUp": case "z": new_direction = DIRECTIONS.up; break;
+      case "ArrowDown": case "s": new_direction = DIRECTIONS.down; break;
+      case "ArrowLeft": case "q": new_direction = DIRECTIONS.left; break;
+      case "ArrowRight": case "d": new_direction = DIRECTIONS.right; break;
       case "j": interpolation_factor++; break;
       case "k": interpolation_factor = Math.max(1, interpolation_factor-1); break;
     }
-    console.log(`interpolation_factor: ${interpolation_factor}`)
+    if (evt.key === "k" || evt.key === "j") setStatusLine(`interpolation factor: ${interpolation_factor}`)
     if (!new_direction) return;
     if (new_direction.x === -velocity.x && new_direction.y === -velocity.y) return; // no 180° turns
     if (new_direction.x === velocity.x && new_direction.y === velocity.y) return; // no 180° turns
@@ -183,6 +190,18 @@ function init() {
   };
 
   window.requestAnimationFrame((t) => update(ctx, t));
+}
+
+function setStatusLine(text: string, timeout_ms: number = 2000) {
+  const status_line = document.getElementById("status-line");
+  if (!status_line) {
+    throw new Error("unable to get status line HTML element");
+  }
+  status_line.innerText = text;
+
+  setTimeout(() => {
+    status_line.innerText = "";
+  }, timeout_ms);
 }
 
 init();
