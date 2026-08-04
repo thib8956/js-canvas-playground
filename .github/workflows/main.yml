@@ -1,5 +1,5 @@
 name: Build and Deploy
-on: 
+on:
   push:
     branches:
       - master
@@ -19,6 +19,7 @@ jobs:
           mkdir dist
           mv *.js dist/
           mv *.html dist/
+          mv *.css dist/
           mv rose.png dist/
       - name: Setup Pages
         id: pages
