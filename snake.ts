@@ -8,7 +8,6 @@ const SEGMENT_SPACING = SNAKE_RADIUS + SNAKE_PADDING;
 const HEAD_COLOR = 0xf43f5e;
 const TAIL_COLOR = 0xf4c3cc;
 const APPLE_COLOR = 0x58f474;
-const APPLE_COLOR_2 = 0x0a6f4b4;
 
 const DIRECTIONS = {
   up: new Vec2d(0, -1),
@@ -17,8 +16,11 @@ const DIRECTIONS = {
   right: new Vec2d(1, 0)
 }
 
+function initSnake(pos: Vec2d, len: number) {
+  return Array.from({ length: len }, (_, i) => pos.add(DIRECTIONS.left.scale(i * SEGMENT_SPACING)));
+}
 // state
-let snake = [new Vec2d(100, 100), new Vec2d(100 - SEGMENT_SPACING, 100), new Vec2d(100 - SEGMENT_SPACING * 2, 100)];
+let snake = initSnake(new Vec2d(200, 200), 10);
 let apple: Vec2d | undefined = undefined;
 let velocity: Vec2d = new Vec2d(0, 0); // unit vector
 let speed = 200; // px/s
@@ -48,6 +50,17 @@ function drawSnake(ctx: CanvasRenderingContext2D, bounds: Vec2d) {
   fillCircle(ctx, tail, SNAKE_RADIUS / 2, TAIL_COLOR)
 }
 
+function drawSnakeTube(ctx: CanvasRenderingContext2D, pts: Vec2d[]) {
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.strokeStyle = "#f43f5e";
+  ctx.lineWidth = SNAKE_RADIUS * 2;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke();
+}
+
 function update(ctx: CanvasRenderingContext2D, time: number) {
   if (lastTime == null) lastTime = time;
   const dt = (time - lastTime) / 1000; // s
@@ -65,7 +78,8 @@ function update(ctx: CanvasRenderingContext2D, time: number) {
       const dist = delta.length();
       if (dist > SEGMENT_SPACING) {
         const unit = delta.scale(1 / dist); // unit vector in direction of delta
-        snake[i] = leader.sub(unit.scale(SEGMENT_SPACING));
+        const target = leader.sub(unit.scale(SEGMENT_SPACING));
+        snake[i] = target;
       }
     }
 

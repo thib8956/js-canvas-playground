@@ -69,7 +69,7 @@ export function drawCircle(ctx: CanvasRenderingContext2D, center: Point, radius:
     ctx.save();
     ctx.beginPath();
     ctx.arc(center.x, center.y, radius, 0, 2*Math.PI);
-    ctx.strokeStyle = `#${color.toString(16)}`
+    ctx.strokeStyle = rgbToString(color);
     ctx.lineWidth = 5;
     ctx.stroke();
     ctx.restore();
@@ -79,7 +79,7 @@ export function fillCircle(ctx: CanvasRenderingContext2D, center: Point, radius:
   ctx.save();
   ctx.beginPath();
   ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-  ctx.fillStyle = `#${color.toString(16)}`;
+  ctx.fillStyle = rgbToString(color);
   ctx.fill();
   ctx.restore();
 }
@@ -88,11 +88,15 @@ export function drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point
     ctx.save();
     ctx.beginPath();
     if (dashed) ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = `#${color.toString(16)}`
+    ctx.strokeStyle = rgbToString(color);
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
     ctx.stroke();
     ctx.restore();
+}
+
+function rgbToString(color: number) {
+  return `#${color.toString(16).padStart(6, '0')}`;
 }
 
 export function drawDashedLine(ctx: CanvasRenderingContext2D, start: Point, end: Point, color: number) {
