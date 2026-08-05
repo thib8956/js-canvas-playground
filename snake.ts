@@ -3,8 +3,8 @@ import { resizeCanvas, fillCircle, lerp, lerpRgb } from "./common.js";
 
 // constants
 const SNAKE_RADIUS = 10;
-const SNAKE_PADDING = 10;
-const SEGMENT_SPACING = SNAKE_RADIUS + SNAKE_PADDING;
+const SNAKE_PADDING = 5;
+const SEGMENT_SPACING = SNAKE_RADIUS * 2 + SNAKE_PADDING;
 const HEAD_COLOR = 0xf43f5e;
 const TAIL_COLOR = 0xf4c3cc;
 const APPLE_COLOR = 0x58f474;
@@ -20,7 +20,8 @@ function initSnake(pos: Vec2d, len: number) {
   return Array.from({ length: len }, (_, i) => pos.add(DIRECTIONS.left.scale(i * SEGMENT_SPACING)));
 }
 // state
-let snake = initSnake(new Vec2d(200, 200), 10);
+let bounds: Vec2d = new Vec2d(0, 0);
+let snake = initSnake(new Vec2d(200, 200), 5);
 let apple: Vec2d | undefined = undefined;
 let velocity: Vec2d = new Vec2d(0, 0); // unit vector
 let speed = 200; // px/s
@@ -55,12 +56,15 @@ function drawSnakeTube(ctx: CanvasRenderingContext2D, pts: Vec2d[]) {
   ctx.stroke();
 }
 
+function randomApple(bounds: Vec2d) {
+  return Vec2d.random(bounds.x - 2 * SNAKE_RADIUS + SNAKE_PADDING, bounds.y - 2 * SNAKE_RADIUS + SNAKE_PADDING);
+}
+
 function update(ctx: CanvasRenderingContext2D, time: number) {
   if (lastTime == null) lastTime = time;
   const dt = (time - lastTime) / 1000; // s
   lastTime = time;
   apple = apple as Vec2d;
-  const bounds = new Vec2d(ctx.canvas.width, ctx.canvas.height);
 
   if (!paused) {
     // update head position
@@ -79,7 +83,6 @@ function update(ctx: CanvasRenderingContext2D, time: number) {
 
     // collisions
     // convert snake_head coords to screen space
-    //const head = wrapCoords(snake_body[0], bounds);
     const head = snake[0].wrap(bounds)
     if (head.distance(apple) < SNAKE_RADIUS * 2) {
       apple = Vec2d.random(bounds.x, bounds.y)
@@ -106,8 +109,9 @@ function init() {
   const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null;
   if (!ctx) throw new Error("unable to get canvas 2D context");
   resizeCanvas(ctx);
+  bounds = new Vec2d(ctx.canvas.width, ctx.canvas.height)
 
-  apple = Vec2d.random(canvas.width, canvas.height)
+  apple = randomApple(bounds);
 
   canvas.onmousemove = () => {};
 
@@ -130,7 +134,7 @@ function init() {
     if (evt.key === "k" || evt.key === "j") setStatusLine(`interpolation factor: ${interpolation_factor}`)
     if (!new_direction) return;
     if (new_direction.x === -velocity.x && new_direction.y === -velocity.y) return; // no 180° turns
-    if (new_direction.x === velocity.x && new_direction.y === velocity.y) return; // no 180° turns
+    if (new_direction.x === velocity.x && new_direction.y === velocity.y) return;
     velocity = new_direction;
   };
 
