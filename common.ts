@@ -14,7 +14,7 @@ export const DIRECTIONS: Point[] = [
     { x: 1, y: 1},    // SE
 ];
 
-export function lerp(a: Point, b: Point, p: number) {
+export function lerpPoint(a: Point, b: Point, p: number) {
     return {
         x: a.x + (b.x - a.x) * p,
         y: a.y + (b.y - a.y) * p
@@ -22,20 +22,23 @@ export function lerp(a: Point, b: Point, p: number) {
 }
 
 export function lerpRgb(a: number, b: number, t: number) {
-  const _lerp = (a: number, b: number, t: number) => (1-t)*a + b*t;
-  const red = _lerp(a >> 16, b >> 16, t)
-  const green = _lerp((a >> 8) & 0xff, (b >> 8) & 0xff, t)
-  const blue = _lerp(a & 0xff, b & 0xff, t)
+  const red = lerp(a >> 16, b >> 16, t)
+  const green = lerp((a >> 8) & 0xff, (b >> 8) & 0xff, t)
+  const blue = lerp(a & 0xff, b & 0xff, t)
   return (red << 16) | (green << 8) | blue
+}
+
+export function lerp(a: number, b: number, t: number) {
+  return (1 - t) * a + b * t;
 }
 
 export function quadraticBezier(a: Point, b: Point, c: Point, res=0.05) {
     const eps = 0.001; // to prevent issues with float comparaison (p <= 1)
     const curve = [];
     for (let p = 0; p - 1 < eps; p += res) {
-        const ab = lerp(a, b, p);
-        const bc = lerp(b, c, p);
-        const abc = lerp(ab, bc, p);
+        const ab = lerpPoint(a, b, p);
+        const bc = lerpPoint(b, c, p);
+        const abc = lerpPoint(ab, bc, p);
         curve.push(abc);
     }
     return curve;
@@ -45,12 +48,12 @@ export function cubicBezier(a: Point, b: Point, c: Point, d: Point, res=0.05) {
     const eps = 0.001; // to prevent issues with float comparaison (p <= 1)
     const curve = [];
     for (let p = 0; p - 1 < eps; p += res) {
-        const ab = lerp(a, b, p);
-        const bc = lerp(b, c, p);
-        const cd = lerp(c, d, p);
-        const abc = lerp(ab, bc, p);
-        const bcd = lerp(bc, cd, p);
-        const abcd = lerp(abc, bcd, p);
+        const ab = lerpPoint(a, b, p);
+        const bc = lerpPoint(b, c, p);
+        const cd = lerpPoint(c, d, p);
+        const abc = lerpPoint(ab, bc, p);
+        const bcd = lerpPoint(bc, cd, p);
+        const abcd = lerpPoint(abc, bcd, p);
         curve.push(abcd);
     }
     return curve;

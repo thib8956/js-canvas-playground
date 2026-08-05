@@ -1,4 +1,4 @@
-import { Point, lerp, drawCircle, drawLine, drawDashedLine, resizeCanvas } from "./common.js"
+import { Point, lerpPoint, drawCircle, drawLine, drawDashedLine, resizeCanvas } from "./common.js"
 
 let points: Point[] = [];
 
@@ -8,24 +8,24 @@ function update(ctx: CanvasRenderingContext2D, time: number) {
     const p = (Math.sin(0.001 * time) + 1.0) * 0.5;
     if (points.length == 2) {
         const [start, end] = points;
-        drawCircle(ctx, lerp(start, end, p), 1, 0xFF0000);
+        drawCircle(ctx, lerpPoint(start, end, p), 1, 0xFF0000);
     } else if (points.length === 3) {
         const [a, b, c] = points;
-        const ab = lerp(a, b, p); 
-        const bc = lerp(b, c, p);
-        const abc = lerp(ab, bc, p);
+        const ab = lerpPoint(a, b, p);
+        const bc = lerpPoint(b, c, p);
+        const abc = lerpPoint(ab, bc, p);
         drawDashedLine(ctx, ab, bc, 0xFF0000);
         drawCircle(ctx, ab, 1, 0xFF0000);
         drawCircle(ctx, bc, 1, 0xFF0000);
         drawCircle(ctx, abc, 1, 0xFFFFFF);
     } else if (points.length === 4) {
         const [a, b, c, d] = points;
-        const ab = lerp(a, b, p); 
-        const bc = lerp(b, c, p); 
-        const cd = lerp(c, d, p); 
-        const abc = lerp(ab, bc, p);
-        const bcd = lerp(bc, cd, p);
-        const abcd = lerp(abc, bcd, p);
+        const ab = lerpPoint(a, b, p);
+        const bc = lerpPoint(b, c, p);
+        const cd = lerpPoint(c, d, p);
+        const abc = lerpPoint(ab, bc, p);
+        const bcd = lerpPoint(bc, cd, p);
+        const abcd = lerpPoint(abc, bcd, p);
 
         drawDashedLine(ctx, ab, bc, 0xFF0000);
         drawDashedLine(ctx, bc, cd, 0xFF0000);
@@ -71,4 +71,3 @@ function init() {
 }
 
 init();
-
