@@ -1,29 +1,5 @@
-class Vec2d {
-    x: number;
-    y: number;
-
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
-
-    toString() {
-        return `[${this.x}, ${this.y}]`;
-    }
-
-    scale(scalar: number): Vec2d {
-        return new Vec2d(this.x * scalar, this.y * scalar);
-    }
-
-    add(other: Vec2d): Vec2d {
-        return new Vec2d(this.x + other.x, this.y + other.y)
-    }
-
-    lerp(other: Vec2d, t: number): Vec2d {
-        // (1-t)*A + B*t
-        return this.scale(1-t).add(other.scale(t));
-    }
-}
+import Vec2d from "./vec.js";
+import { drawCircle, resizeCanvas } from "./common.js";
 
 // state
 let target: Vec2d | undefined = undefined;
@@ -33,28 +9,12 @@ let pause = false;
 let mode: "follow" | "bounce" = "bounce";
 let start: number | undefined = undefined;
 
-function drawCircle(ctx: CanvasRenderingContext2D, center: Vec2d, radius: number, color: number) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, radius, 0, 2*Math.PI);
-    ctx.strokeStyle = `#${color.toString(16)}`
-    ctx.lineWidth = 5;
-    ctx.stroke();
-    ctx.restore();
-}
-
-function resizeCanvas(ctx: CanvasRenderingContext2D) {
-    ctx.canvas.width  = window.innerWidth;
-    ctx.canvas.height = window.innerHeight;
-    ctx.clearRect(0, 0, ctx.canvas.height, ctx. canvas.width);
-}
-
 function update(ctx: CanvasRenderingContext2D, timestamp: number) {
     switch (mode) {
         case "bounce":
             updateBounce(ctx, timestamp);
         break;
-        case "follow": 
+        case "follow":
             updateFollow(ctx);
         break;
         default:
@@ -112,7 +72,7 @@ function init() {
         console.log("key down", evt);
         if (mode === "follow") mode = "bounce";
         else mode = "follow"
-            console.log("mode", mode);
+        console.log("mode", mode);
     }
 
     window.addEventListener('resize', () => resizeCanvas(ctx));

@@ -21,6 +21,14 @@ export function lerp(a: Point, b: Point, p: number) {
     };
 }
 
+export function lerpRgb(a: number, b: number, t: number) {
+  const _lerp = (a: number, b: number, t: number) => (1-t)*a + b*t;
+  const red = _lerp(a >> 16, b >> 16, t)
+  const green = _lerp((a >> 8) & 0xff, (b >> 8) & 0xff, t)
+  const blue = _lerp(a & 0xff, b & 0xff, t)
+  return (red << 16) | (green << 8) | blue
+}
+
 export function quadraticBezier(a: Point, b: Point, c: Point, res=0.05) {
     const eps = 0.001; // to prevent issues with float comparaison (p <= 1)
     const curve = [];
@@ -62,6 +70,15 @@ export function drawCircle(ctx: CanvasRenderingContext2D, center: Point, radius:
     ctx.lineWidth = 5;
     ctx.stroke();
     ctx.restore();
+}
+
+export function fillCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number, color: number) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = `#${color.toString(16)}`;
+  ctx.fill();
+  ctx.restore();
 }
 
 export function drawLine(ctx: CanvasRenderingContext2D, start: Point, end: Point, color: number, dashed=false) {

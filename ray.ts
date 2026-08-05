@@ -1,7 +1,4 @@
-import { 
-    Point, resizeCanvas, drawCircle, drawLine, 
-    cubicBezier, quadraticBezier, drawCurve, drawPoints
-} from "./common.js"
+import {  Point, resizeCanvas, drawCircle } from "./common.js"
 
 const GRID_SIZE = 20;
 
@@ -62,4 +59,3 @@ function drawGrid(ctx: CanvasRenderingContext2D) {
 }
 
 init();
-

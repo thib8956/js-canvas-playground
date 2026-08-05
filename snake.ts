@@ -1,52 +1,5 @@
-class Vec2d {
-  x: number;
-  y: number;
-
-  constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
-  }
-
-  toString() {
-    return `[${this.x}, ${this.y}]`;
-  }
-
-  scale(scalar: number): Vec2d {
-    return new Vec2d(this.x * scalar, this.y * scalar);
-  }
-
-  add(other: Vec2d): Vec2d {
-    return new Vec2d(this.x + other.x, this.y + other.y);
-  }
-
-  sub(other: Vec2d): Vec2d {
-    return new Vec2d(this.x - other.x, this.y - other.y);
-  }
-
-  length(): number {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
-  }
-
-  distance(other: Vec2d): number {
-    return this.sub(other).length();
-  }
-
-  lerp(other: Vec2d, t: number): Vec2d {
-    // (1-t)*A + B*t
-    return this.scale(1 - t).add(other.scale(t));
-  }
-
-  clamp(min: Vec2d, max: Vec2d): Vec2d {
-    return new Vec2d(
-      Math.min(Math.max(this.x, min.x), max.x),
-      Math.min(Math.max(this.y, min.y), max.y)
-    );
-  }
-
-  wrap(bounds: Vec2d) {
-    return new Vec2d(trueMod(this.x, bounds.x), trueMod(this.y, bounds.y));
-  }
-}
+import Vec2d from "./vec.js";
+import { fillCircle, lerpRgb } from "./common.js";
 
 // constants
 const SNAKE_SIZE = 20;
@@ -71,39 +24,10 @@ let speed = 200; // px/s
 let interpolation_factor = 10;
 let paused = false;
 
-// utility functions
-function trueMod(v: number, max: number): number {
-  return ((v % max) + max) % max;
-}
-
 function resizeCanvas(ctx: CanvasRenderingContext2D) {
   ctx.canvas.width = ctx.canvas.clientWidth;
   ctx.canvas.height = ctx.canvas.clientHeight;
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-}
-
-function drawCircle(ctx: CanvasRenderingContext2D, center: Vec2d, radius: number, color: string) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.restore();
-}
-
-function getRandomPos(maxX: number, maxY: number): Vec2d {
-  return new Vec2d(Math.random() * maxX, Math.random() * maxY)
-}
-
-function lerpColor(a: number, b: number, t: number) {
-  const red = lerp(a >> 16, b >> 16, t)
-  const green = lerp((a >> 8) & 0xff, (b >> 8) & 0xff, t)
-  const blue = lerp(a & 0xff, b & 0xff, t)
-  return (red << 16) | (green << 8) | blue
-}
-
-function lerp(a: number, b: number, t: number) {
-  return (1-t)*a + b*t
 }
 
 let lastTime: number | undefined = undefined;
@@ -135,7 +59,7 @@ function update(ctx: CanvasRenderingContext2D, t: number) {
     const head = snake[0].wrap(bounds)
     // check if snake head is overlapping apple
     if (head.distance(apple) < SNAKE_SIZE) {
-      apple = getRandomPos(ctx.canvas.width, ctx.canvas.height);
+      apple = Vec2d.random(bounds.x, bounds.y)
       const { x: lastX, y: lastY } = snake[snake.length - 1];
       snake.push(new Vec2d(lastX, lastY));
       speed += 10;
@@ -145,19 +69,19 @@ function update(ctx: CanvasRenderingContext2D, t: number) {
 
   // draw apple
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  drawCircle(ctx, apple, SNAKE_SIZE / 2, `#${APPLE_COLOR.toString(16)}`)
+  fillCircle(ctx, apple, SNAKE_SIZE / 2, APPLE_COLOR);
 
   // draw snake
   for (let i = 0; i < snake.length - 1; ++i) {
     // draw a trail of overlapping circles by interpolating between the body positions
     for (let j = 0; j < interpolation_factor; ++j) {
       const pos = snake[i].lerp(snake[i + 1], j / interpolation_factor).wrap(bounds);
-      const color = lerpColor(HEAD_COLOR, TAIL_COLOR, (i + j / interpolation_factor) / snake.length)
-      drawCircle(ctx, pos, SNAKE_SIZE / 2, `#${color.toString(16)}`)
+      const color = lerpRgb(HEAD_COLOR, TAIL_COLOR, (i + j / interpolation_factor) / snake.length)
+      fillCircle(ctx, pos, SNAKE_SIZE / 2, color)
     }
   }
   const tail = snake[snake.length - 1].wrap(bounds)
-  drawCircle(ctx, tail, SNAKE_SIZE / 2, `#${TAIL_COLOR.toString(16)}`)
+  fillCircle(ctx, tail, SNAKE_SIZE / 2, TAIL_COLOR)
 
   window.requestAnimationFrame((t) => update(ctx, t));
 }
@@ -170,7 +94,7 @@ function init() {
   if (!ctx) throw new Error("unable to get canvas 2D context");
   resizeCanvas(ctx);
 
-  apple = getRandomPos(canvas.width, canvas.height)
+  apple = Vec2d.random(canvas.width, canvas.height)
 
   canvas.onmousemove = () => {};
 

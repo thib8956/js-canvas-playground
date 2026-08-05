@@ -1,5 +1,5 @@
-import { 
-    Point, resizeCanvas, drawCircle, drawLine, 
+import {
+    Point, resizeCanvas,
     cubicBezier, quadraticBezier, drawCurve, drawPoints
 } from "./common.js"
 
@@ -40,7 +40,7 @@ function init() {
         { x: 850, y: 450 },
         { x: 900, y: 550 },
     ];
-    
+
     resizeCanvas(ctx); // Init canvas
     draw(ctx, points);
 
