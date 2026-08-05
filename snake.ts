@@ -46,11 +46,6 @@ class Vec2d {
   wrap(bounds: Vec2d) {
     return new Vec2d(trueMod(this.x, bounds.x), trueMod(this.y, bounds.y));
   }
-
-}
-
-function trueMod(v: number, max: number): number {
-  return ((v % max) + max) % max;
 }
 
 // constants
@@ -69,11 +64,17 @@ const DIRECTIONS = {
 }
 
 // state
-let snake_body = [new Vec2d(100, 100), new Vec2d(100 - SEGMENT_SPACING, 100), new Vec2d(100 - SEGMENT_SPACING * 2, 100)];
+let snake = [new Vec2d(100, 100), new Vec2d(100 - SEGMENT_SPACING, 100), new Vec2d(100 - SEGMENT_SPACING * 2, 100)];
 let apple: Vec2d | undefined = undefined;
 let velocity: Vec2d = new Vec2d(0, 0); // unit vector
 let speed = 200; // px/s
 let interpolation_factor = 10;
+let paused = false;
+
+// utility functions
+function trueMod(v: number, max: number): number {
+  return ((v % max) + max) % max;
+}
 
 function resizeCanvas(ctx: CanvasRenderingContext2D) {
   ctx.canvas.width = ctx.canvas.clientWidth;
@@ -90,60 +91,6 @@ function drawCircle(ctx: CanvasRenderingContext2D, center: Vec2d, radius: number
   ctx.restore();
 }
 
-let lastTime: number | undefined = undefined;
-
-function update(ctx: CanvasRenderingContext2D, t: number) {
-  if (lastTime == null) lastTime = t;
-  const dt = (t - lastTime) / 1000; // s
-  lastTime = t;
-  apple = apple as Vec2d;
-  const bounds = new Vec2d(ctx.canvas.width, ctx.canvas.height);
-
-  // update head position
-  snake_body[0] = snake_body[0].add(velocity.scale(speed * dt))
-  // update body position by following the segment in front
-  for (let i = 1; i < snake_body.length; i++) {
-    const leader = snake_body[i - 1];
-    const delta = leader.sub(snake_body[i]);
-    const dist = delta.length();
-    if (dist > SEGMENT_SPACING) {
-      const unit = delta.scale(1 / dist); // unit vector in direction of delta
-      snake_body[i] = leader.sub(unit.scale(SEGMENT_SPACING));
-    }
-  }
-
-  // collisions
-  // convert snake_head coords to screen space
-  //const head = wrapCoords(snake_body[0], bounds);
-  const head = snake_body[0].wrap(bounds)
-  // check if snake head is overlapping apple
-  if (head.distance(apple) < SNAKE_SIZE) {
-    apple = getRandomPos(ctx.canvas.width, ctx.canvas.height);
-    const { x: lastX, y: lastY } = snake_body[snake_body.length - 1];
-    snake_body.push(new Vec2d(lastX, lastY));
-    speed += 10;
-    setStatusLine(`speed = ${speed}`)
-  }
-
-  // draw apple
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  drawCircle(ctx, apple, SNAKE_SIZE / 2, `#${APPLE_COLOR.toString(16)}`)
-
-  // draw snake
-  for (let i = 0; i < snake_body.length - 1; ++i) {
-    // draw a trail of overlapping circles by interpolating between the body positions
-    for (let j = 0; j < interpolation_factor; ++j) {
-      const pos = snake_body[i].lerp(snake_body[i + 1], j / interpolation_factor).wrap(bounds);
-      const color = lerpColor(HEAD_COLOR, TAIL_COLOR, (i + j / interpolation_factor) / snake_body.length)
-      drawCircle(ctx, pos, SNAKE_SIZE / 2, `#${color.toString(16)}`)
-    }
-  }
-  const tail = snake_body[snake_body.length - 1].wrap(bounds)
-  drawCircle(ctx, tail, SNAKE_SIZE / 2, `#${TAIL_COLOR.toString(16)}`)
-
-  window.requestAnimationFrame((t) => update(ctx, t));
-}
-
 function getRandomPos(maxX: number, maxY: number): Vec2d {
   return new Vec2d(Math.random() * maxX, Math.random() * maxY)
 }
@@ -158,6 +105,63 @@ function lerpColor(a: number, b: number, t: number) {
 function lerp(a: number, b: number, t: number) {
   return (1-t)*a + b*t
 }
+
+let lastTime: number | undefined = undefined;
+
+function update(ctx: CanvasRenderingContext2D, t: number) {
+  if (lastTime == null) lastTime = t;
+  const dt = (t - lastTime) / 1000; // s
+  lastTime = t;
+  apple = apple as Vec2d;
+  const bounds = new Vec2d(ctx.canvas.width, ctx.canvas.height);
+
+  if (!paused) {
+    // update head position
+    snake[0] = snake[0].add(velocity.scale(speed * dt))
+    // update body position by following the segment in front
+    for (let i = 1; i < snake.length; i++) {
+      const leader = snake[i - 1];
+      const delta = leader.sub(snake[i]);
+      const dist = delta.length();
+      if (dist > SEGMENT_SPACING) {
+        const unit = delta.scale(1 / dist); // unit vector in direction of delta
+        snake[i] = leader.sub(unit.scale(SEGMENT_SPACING));
+      }
+    }
+
+    // collisions
+    // convert snake_head coords to screen space
+    //const head = wrapCoords(snake_body[0], bounds);
+    const head = snake[0].wrap(bounds)
+    // check if snake head is overlapping apple
+    if (head.distance(apple) < SNAKE_SIZE) {
+      apple = getRandomPos(ctx.canvas.width, ctx.canvas.height);
+      const { x: lastX, y: lastY } = snake[snake.length - 1];
+      snake.push(new Vec2d(lastX, lastY));
+      speed += 10;
+      setStatusLine(`speed = ${speed}`)
+    }
+  }
+
+  // draw apple
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  drawCircle(ctx, apple, SNAKE_SIZE / 2, `#${APPLE_COLOR.toString(16)}`)
+
+  // draw snake
+  for (let i = 0; i < snake.length - 1; ++i) {
+    // draw a trail of overlapping circles by interpolating between the body positions
+    for (let j = 0; j < interpolation_factor; ++j) {
+      const pos = snake[i].lerp(snake[i + 1], j / interpolation_factor).wrap(bounds);
+      const color = lerpColor(HEAD_COLOR, TAIL_COLOR, (i + j / interpolation_factor) / snake.length)
+      drawCircle(ctx, pos, SNAKE_SIZE / 2, `#${color.toString(16)}`)
+    }
+  }
+  const tail = snake[snake.length - 1].wrap(bounds)
+  drawCircle(ctx, tail, SNAKE_SIZE / 2, `#${TAIL_COLOR.toString(16)}`)
+
+  window.requestAnimationFrame((t) => update(ctx, t));
+}
+
 
 function init() {
   const canvas = document.getElementById("game-canvas") as HTMLCanvasElement | null;
@@ -181,6 +185,10 @@ function init() {
       case "ArrowRight": case "d": new_direction = DIRECTIONS.right; break;
       case "j": interpolation_factor++; break;
       case "k": interpolation_factor = Math.max(1, interpolation_factor-1); break;
+      case "p":
+        paused = !paused;
+        setStatusLine(paused ? "paused" : "", null);
+        break;
     }
     if (evt.key === "k" || evt.key === "j") setStatusLine(`interpolation factor: ${interpolation_factor}`)
     if (!new_direction) return;
@@ -192,16 +200,18 @@ function init() {
   window.requestAnimationFrame((t) => update(ctx, t));
 }
 
-function setStatusLine(text: string, timeout_ms: number = 2000) {
+function setStatusLine(text: string, timeout_ms: number | null = 2000) {
   const status_line = document.getElementById("status-line");
   if (!status_line) {
     throw new Error("unable to get status line HTML element");
   }
   status_line.innerText = text;
 
-  setTimeout(() => {
-    status_line.innerText = "";
-  }, timeout_ms);
+  if (timeout_ms != null) {
+    setTimeout(() => {
+      status_line.innerText = "";
+    }, timeout_ms);
+  }
 }
 
 init();

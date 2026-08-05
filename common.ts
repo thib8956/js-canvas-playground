@@ -15,7 +15,7 @@ export const DIRECTIONS: Point[] = [
 ];
 
 export function lerp(a: Point, b: Point, p: number) {
-    return { 
+    return {
         x: a.x + (b.x - a.x) * p,
         y: a.y + (b.y - a.y) * p
     };
@@ -25,7 +25,7 @@ export function quadraticBezier(a: Point, b: Point, c: Point, res=0.05) {
     const eps = 0.001; // to prevent issues with float comparaison (p <= 1)
     const curve = [];
     for (let p = 0; p - 1 < eps; p += res) {
-        const ab = lerp(a, b, p); 
+        const ab = lerp(a, b, p);
         const bc = lerp(b, c, p);
         const abc = lerp(ab, bc, p);
         curve.push(abc);
@@ -37,9 +37,9 @@ export function cubicBezier(a: Point, b: Point, c: Point, d: Point, res=0.05) {
     const eps = 0.001; // to prevent issues with float comparaison (p <= 1)
     const curve = [];
     for (let p = 0; p - 1 < eps; p += res) {
-        const ab = lerp(a, b, p); 
-        const bc = lerp(b, c, p); 
-        const cd = lerp(c, d, p); 
+        const ab = lerp(a, b, p);
+        const bc = lerp(b, c, p);
+        const cd = lerp(c, d, p);
         const abc = lerp(ab, bc, p);
         const bcd = lerp(bc, cd, p);
         const abcd = lerp(abc, bcd, p);
@@ -90,4 +90,3 @@ export function drawCurve(ctx: CanvasRenderingContext2D, curve: Point[]) {
         drawLine(ctx, curve[i], curve[i+1], 0xFFFFFF);
     }
 }
-
