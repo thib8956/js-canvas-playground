@@ -48,7 +48,7 @@ function updateFollow(ctx: CanvasRenderingContext2D, dt: number) {
 function updateBounce(ctx: CanvasRenderingContext2D, dt: number) {
     // update head pos
     // P_t+1 = P_t + V * t
-    const newPos = trail[0].add(velocity.scale(0.001*dt));
+    const newPos = trail[0].add(velocity.scale(dt));
     if (newPos.x > ctx.canvas.width - 100) { velocity.x *= -1; newPos.x = ctx.canvas.width - 100; }
     if (newPos.y > ctx.canvas.height - 100) { velocity.y *= -1; newPos.y = ctx.canvas.height - 100; }
     if (newPos.x < 100) { velocity.x *= -1; newPos.x = 100; }
@@ -82,8 +82,8 @@ function init() {
     if (!canvas) throw new Error("unable to get canvas HTML element");
     const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null;
     if (!ctx) throw new Error("unable to get canvas 2D context");
-    ctx.canvas.width = ctx.canvas.clientWidth;
-    ctx.canvas.height = ctx.canvas.clientHeight;
+    ctx.canvas.width  = window.innerWidth
+    ctx.canvas.height = window.innerHeight
 
     canvas.onmousemove = (evt) => {
         const {clientX, clientY} = evt;
