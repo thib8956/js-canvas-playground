@@ -1,5 +1,5 @@
 import Vec2d from "./vec.js";
-import { fillCircle, lerp, lerpRgb } from "./common.js";
+import { resizeCanvas, fillCircle, lerp, lerpRgb } from "./common.js";
 
 // constants
 const SNAKE_RADIUS = 10;
@@ -26,12 +26,6 @@ let velocity: Vec2d = new Vec2d(0, 0); // unit vector
 let speed = 200; // px/s
 let interpolation_factor = 10;
 let paused = false;
-
-function resizeCanvas(ctx: CanvasRenderingContext2D) {
-  ctx.canvas.width = ctx.canvas.clientWidth;
-  ctx.canvas.height = ctx.canvas.clientHeight;
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-}
 
 let lastTime: number | undefined = undefined;
 

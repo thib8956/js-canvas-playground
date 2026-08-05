@@ -21,6 +21,11 @@ export default class Vec2d implements Point {
     return `[${this.x}, ${this.y}]`;
   }
 
+  normalize(): Vec2d {
+    const len = this.length();
+    return new Vec2d(this.x / len, this.y / len);
+  }
+
   scale(scalar: number): Vec2d {
     return new Vec2d(this.x * scalar, this.y * scalar);
   }

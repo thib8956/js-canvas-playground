@@ -61,8 +61,8 @@ export function cubicBezier(a: Point, b: Point, c: Point, d: Point, res=0.05) {
 
 export function resizeCanvas(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    ctx.canvas.width  = window.innerWidth;
-    ctx.canvas.height = window.innerHeight;
+    ctx.canvas.width = ctx.canvas.clientWidth;
+    ctx.canvas.height = ctx.canvas.clientHeight;
 }
 
 export function drawCircle(ctx: CanvasRenderingContext2D, center: Point, radius: number, color: number) {
