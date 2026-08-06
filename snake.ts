@@ -8,6 +8,7 @@ const SEGMENT_SPACING = SNAKE_RADIUS * 2 + SNAKE_PADDING;
 const HEAD_COLOR = 0xf43f5e;
 const TAIL_COLOR = 0xf4c3cc;
 const APPLE_COLOR = 0x58f474;
+const MOUSE_DEADZONE = 10;
 
 const DIRECTIONS = {
   up: new Vec2d(0, -1),
@@ -27,6 +28,7 @@ let velocity: Vec2d = new Vec2d(0, 0); // unit vector
 let speed = 200; // px/s
 let interpolation_factor = 10;
 let paused = false;
+let mouse_control = false;
 
 let lastTime: number | undefined = undefined;
 
@@ -113,7 +115,19 @@ function init() {
 
   apple = randomApple(bounds);
 
-  canvas.onmousemove = () => {};
+  canvas.onmousemove = (evt) => {
+    if (!mouse_control) return;
+    const { clientX, clientY } = evt;
+    const rect = ctx.canvas.getBoundingClientRect();
+    const target = new Vec2d(clientX - rect.left, clientY - rect.top);
+    const head = snake[0].wrap(bounds);
+    const delta = target.sub(head);
+    // MOUSE_DEADZONE prevents jittery movement when the mouse is close to the head
+    if (delta.length() > MOUSE_DEADZONE) {
+      const new_velocity = delta.normalize();
+      velocity = new_velocity;
+    }
+  };
 
   canvas.onclick = () => {};
 
@@ -126,6 +140,10 @@ function init() {
       case "ArrowRight": case "d": new_direction = DIRECTIONS.right; break;
       case "j": interpolation_factor++; break;
       case "k": interpolation_factor = Math.max(1, interpolation_factor-1); break;
+      case "m":
+        mouse_control = !mouse_control;
+        setStatusLine(`mouse control: ${mouse_control ? "on" : "off"}`);
+        break;
       case "Space": case "p":
         paused = !paused;
         setStatusLine(paused ? "paused" : "", null);
