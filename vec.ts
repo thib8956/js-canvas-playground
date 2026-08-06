@@ -25,6 +25,13 @@ export default class Vec2d implements Point {
     return `[${this.x}, ${this.y}]`;
   }
 
+  toPolar() {
+    return {
+      r: this.length(),
+      theta: Math.atan2(this.y, this.x),
+    };
+  }
+
   normalize(): Vec2d {
     const len = this.length();
     return new Vec2d(this.x / len, this.y / len);
