@@ -20,6 +20,7 @@ const DIRECTIONS = {
 function initSnake(pos: Vec2d, len: number) {
   return Array.from({ length: len }, (_, i) => pos.add(DIRECTIONS.left.scale(i * SEGMENT_SPACING)));
 }
+
 // state
 let bounds: Vec2d = new Vec2d(0, 0);
 let snake = initSnake(new Vec2d(200, 200), 5);
@@ -29,6 +30,7 @@ let speed = 200; // px/s
 let interpolation_factor = 10;
 let paused = false;
 let mouse_control = false;
+let status_line_timeout_id: number | undefined = undefined;
 
 let lastTime: number | undefined = undefined;
 
@@ -51,7 +53,7 @@ function drawSnakeTube(ctx: CanvasRenderingContext2D, pts: Vec2d[]) {
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
   for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.strokeStyle = "#f43f5e";
+  ctx.strokeStyle = `#${HEAD_COLOR.toString(16).padStart(6, '0')}`;
   ctx.lineWidth = SNAKE_RADIUS * 2;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
@@ -164,11 +166,16 @@ function setStatusLine(text: string, timeout_ms: number | null = 2000) {
   if (!status_line) {
     throw new Error("unable to get status line HTML element");
   }
+  if (status_line_timeout_id) {
+    clearTimeout(status_line_timeout_id);
+    status_line_timeout_id = undefined;
+  }
   status_line.innerText = text;
 
   if (timeout_ms != null) {
-    setTimeout(() => {
+    status_line_timeout_id = setTimeout(() => {
       status_line.innerText = "";
+      status_line_timeout_id = undefined;
     }, timeout_ms);
   }
 }
