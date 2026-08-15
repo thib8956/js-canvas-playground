@@ -91,8 +91,8 @@ function init() {
     if (!canvas) throw new Error("unable to get canvas HTML element");
     const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null;
     if (!ctx) throw new Error("unable to get canvas 2D context");
-  ctx.canvas.width = ctx.canvas.clientWidth;
-  ctx.canvas.height = ctx.canvas.clientHeight;
+    ctx.canvas.width = ctx.canvas.clientWidth;
+    ctx.canvas.height = ctx.canvas.clientHeight;
 
     canvas.onmousemove = (evt) => {
         const {clientX, clientY} = evt;

@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Spline demo</title>
+    <style>
+      canvas { display: block; width: 100vw; height: 100vh; }
+    </style>
 </head>
-<body style="margin: 0; padding 0; overflow: hidden; background-color: #000000">
-    <canvas id="canvas" width="800" height="600"></canvas>
+<body style="margin: 0; padding: 0; overflow: hidden; background-color: #000000">
+    <div style="color: white; padding: 1rem;" id="status-line"></div>
+    <canvas id="canvas"></canvas>
 </body>
 <script type="module" src="spline.js"></script>
 </html>

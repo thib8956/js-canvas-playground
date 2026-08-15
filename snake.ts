@@ -89,7 +89,7 @@ function update(ctx: CanvasRenderingContext2D, time: number) {
     // convert snake_head coords to screen space
     const head = snake[0].wrap(bounds)
     if (head.distance(apple) < SNAKE_RADIUS * 2) {
-      apple = Vec2d.random(bounds.x, bounds.y)
+      apple = randomApple(bounds);
       const { x: lastX, y: lastY } = snake[snake.length - 1];
       snake.push(new Vec2d(lastX, lastY));
       speed += 10;

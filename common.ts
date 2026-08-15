@@ -22,9 +22,12 @@ export function lerpPoint(a: Point, b: Point, p: number) {
 }
 
 export function lerpRgb(a: number, b: number, t: number) {
-  const red = lerp(a >> 16, b >> 16, t)
-  const green = lerp((a >> 8) & 0xff, (b >> 8) & 0xff, t)
-  const blue = lerp(a & 0xff, b & 0xff, t)
+  // extract rgb components from a and b
+  const [ra, ga, ba] = [a >> 16, (a >> 8) & 0xff, a & 0xff];
+  const [rb, gb, bb] = [b >> 16, (b >> 8) & 0xff, b & 0xff];
+  const red = lerp(ra, rb, t);
+  const green = lerp(ga, gb, t);
+  const blue = lerp(ba, bb, t);
   return (red << 16) | (green << 8) | blue
 }
 
@@ -57,6 +60,58 @@ export function cubicBezier(a: Point, b: Point, c: Point, d: Point, res=0.05) {
         curve.push(abcd);
     }
     return curve;
+}
+
+export function catmullRom(points: Point[],  { res = 0.05, looped = false }: { res?: number; looped?: boolean } = {}) {
+  let curve: Point[] = [];
+  // In non-looped mode, the curve goes from `points[1]` to `points[points.length - 2]`: the first
+  // and last points act as control points only.
+  // In looped mode, just treat the array as a circular array.
+  const tmax = looped ? points.length : points.length - 3;
+  for (let t = 0; t < tmax; t += res) {
+    const indices = looped ? getPointIndicesLooped(points, t) : getPointIndices(points, t);
+    const pos = getSplinePoint(...indices, t);
+    curve.push(pos);
+  }
+  return curve;
+
+  function getPointIndices(points: Point[], t: number): [number, number, number, number] {
+    // Select 4 consecutive control points in the points array according to t.
+    // t = 1 => first point, t = 2 => second point, etc.
+    const p1 = Math.floor(t) + 1;
+    const p2 = p1 + 1;
+    const p3 = p2 + 1;
+    const p0 = p1 - 1;
+    return [p0, p1, p2, p3];
+  }
+
+  function getPointIndicesLooped(points: Point[], t: number): [number, number, number, number] {
+    const p1 = Math.floor(t);
+    const p2 = (p1 + 1) % points.length;
+    const p3 = (p2 + 1) % points.length;
+    const p0 = (p1 - 1 + points.length) % points.length;
+    return [p0, p1, p2, p3];
+  }
+
+  function getSplinePoint(p0: number, p1: number, p2: number, p3: number, t: number): Point {
+    // Normalize t to [0, 1]
+    t = t - Math.floor(t);
+
+    const tt = t * t;
+    const ttt = tt * t;
+
+    // Catmull-Rom basis functions, derived from the matrix form
+    const q1 = -ttt + 2.0 * tt - t;
+    const q2 = 3.0 * ttt - 5.0 * tt + 2.0;
+    const q3 = -3.0 * ttt + 4.0 * tt + t;
+    const q4 = ttt - tt;
+
+    // Interpolate x and y coordinates
+    const tx = 0.5 * (points[p0].x * q1 + points[p1].x * q2 + points[p2].x * q3 + points[p3].x * q4);
+    const ty = 0.5 * (points[p0].y * q1 + points[p1].y * q2 + points[p2].y * q3 + points[p3].y * q4);
+
+    return { x: tx, y: ty };
+  }
 }
 
 export function resizeCanvas(ctx: CanvasRenderingContext2D) {

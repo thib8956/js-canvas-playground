@@ -1,34 +1,45 @@
 import {
     Point, resizeCanvas,
-    cubicBezier, quadraticBezier, drawCurve, drawPoints
+    cubicBezier, quadraticBezier, drawCurve, drawPoints,
+    catmullRom
 } from "./common.js"
+
+let mode: "catmull" | "bezier" = "bezier";
+let looped = false;
 
 
 function draw(ctx: CanvasRenderingContext2D, points: Point[]) {
-    let start = 0;
+  let start = 0;
+  if (mode === "bezier") {
     while (true) {
-        const sl = points.slice(start, start + 4);
-        if (sl.length === 4) {
-            const bezier = cubicBezier(...(sl as [Point, Point, Point, Point]));
-            drawCurve(ctx, bezier);
-            start += 3;
-        } else if (sl.length === 3) {
-            const bezier = quadraticBezier(...(sl as [Point, Point, Point]));
-            drawCurve(ctx, bezier);
-            start += 2;
-        } else {
-            break;
-        }
+      const sl = points.slice(start, start + 4);
+      if (sl.length === 4) {
+        const bezier = cubicBezier(...(sl as [Point, Point, Point, Point]));
+        drawCurve(ctx, bezier);
+        start += 3;
+      } else if (sl.length === 3) {
+        const bezier = quadraticBezier(...(sl as [Point, Point, Point]));
+        drawCurve(ctx, bezier);
+        start += 2;
+      } else {
+        break;
+      }
     }
-    drawPoints(ctx, points);
+  } else if (mode === "catmull") {
+    // Draw Catmull-Rom Spline.
+    const catmull = catmullRom(points, { looped: looped });
+    drawCurve(ctx, catmull);
+  }
+  drawPoints(ctx, points);
+  setStatusLine();
 }
 
 function init() {
     const canvas = document.getElementById("canvas") as HTMLCanvasElement | null;
     if (!canvas) throw new Error("unable to get canvas HTML element");
-
     const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null;
     if (!ctx) throw new Error("unable to get canvas 2D context");
+    resizeCanvas(ctx);
 
     let selection: number | undefined = undefined;
     let points = [
@@ -64,7 +75,7 @@ function init() {
             // redraw
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             draw(ctx, points);
-
+            setStatusLine();
         }
     };
 
@@ -81,7 +92,6 @@ function init() {
             // redraw
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             draw(ctx, points);
-
         }
     };
 
@@ -92,6 +102,7 @@ function init() {
             // redraw
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             draw(ctx, points);
+            setStatusLine();
         }
     };
 
@@ -104,6 +115,7 @@ function init() {
             // redraw
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             draw(ctx, points);
+            setStatusLine();
         }
     };
 
@@ -114,6 +126,40 @@ function init() {
     canvas.ontouchend = () => {
         selection = undefined;
     };
+
+    window.onresize = () => {
+      resizeCanvas(ctx);
+      draw(ctx, points);
+      setStatusLine();
+    };
+
+    window.onkeydown = (evt) => {
+      if (evt.key === " ") mode = mode === "bezier" ? "catmull" : "bezier";
+      if (evt.key === "l") looped = !looped;
+
+      // redraw
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      draw(ctx, points);
+      setStatusLine();
+    };
+}
+
+function setStatusLine() {
+  const statusLine = document.getElementById("status-line");
+  if (!statusLine) throw new Error("Could not find status line");
+
+  let msg = "";
+  switch (mode) {
+    case "bezier": {
+      msg = "Bezier spline demo";
+      break;
+    }
+    case "catmull": {
+      msg = looped ? "Catmull-Rom spline demo (looped)" : "Catmull-Rom spline demo";
+      break;
+    }
+  }
+  statusLine.innerText = msg;
 }
 
 init();

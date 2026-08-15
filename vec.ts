@@ -50,7 +50,7 @@ export default class Vec2d implements Point {
   }
 
   length(): number {
-    return Math.sqrt(this.x * this.x + this.y * this.y);
+    return Math.hypot(this.x, this.y);
   }
 
   distance(other: Vec2d): number {
