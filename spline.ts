@@ -65,13 +65,16 @@ function init() {
 
     canvas.onmousedown = (evt: MouseEvent) => {
         const { clientX, clientY } = evt;
+        const rect = ctx.canvas.getBoundingClientRect();
+        const click = { x: clientX - rect.left, y: clientY - rect.top };  // screen to canvas coordinates
+
         for (const p of points) {
-            if (Math.abs(p.x - clientX) < 10 && Math.abs(p.y - clientY) < 10) {
+            if (Math.abs(p.x - click.x) < 10 && Math.abs(p.y - click.y) < 10) {
                 selection = points.indexOf(p);
             }
         }
         if (selection === undefined) {
-            points.push({ x: clientX, y: clientY });
+            points.push({ x: click.x, y: click.y });
             // redraw
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             draw(ctx, points);
