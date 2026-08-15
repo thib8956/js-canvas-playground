@@ -1,5 +1,5 @@
 import Vec2d from "./vec.js";
-import { resizeCanvas, fillCircle, lerp, lerpRgb } from "./common.js";
+import { resizeCanvas, fillCircle, lerp, lerpRgb, catmullRom, cubicBezier, rgbToString, drawCircle } from "./common.js";
 
 // constants
 const SNAKE_RADIUS = 10;
@@ -31,6 +31,7 @@ let interpolation_factor = 10;
 let paused = false;
 let mouse_control = false;
 let status_line_timeout_id: number | undefined = undefined;
+let draw_mode: "linear" | "catmull" = "linear";
 
 let lastTime: number | undefined = undefined;
 
@@ -49,15 +50,30 @@ function drawSnake(ctx: CanvasRenderingContext2D, bounds: Vec2d) {
   fillCircle(ctx, tail, SNAKE_RADIUS / 2, TAIL_COLOR)
 }
 
-function drawSnakeTube(ctx: CanvasRenderingContext2D, pts: Vec2d[]) {
-  ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-  ctx.strokeStyle = `#${HEAD_COLOR.toString(16).padStart(6, '0')}`;
+function drawSnakeCatmullRom(ctx: CanvasRenderingContext2D, bounds: Vec2d) {
+  const curve = catmullRom([snake[0], ...snake, snake[snake.length - 1]]);
+
+  ctx.strokeStyle = rgbToString(TAIL_COLOR);
   ctx.lineWidth = SNAKE_RADIUS * 2;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
+  ctx.beginPath();
+
+  let prev: Vec2d | null = null;
+  for (const p of curve) {
+    const w = new Vec2d(p.x, p.y).wrap(bounds);
+    // A wrap crossing shows up as a large jump in wrapped space.
+    const isWrapped = prev && (Math.abs(w.x - prev.x) > bounds.x / 2 || Math.abs(w.y - prev.y) > bounds.y / 2);
+    if (isWrapped) {
+      ctx.stroke();
+      ctx.beginPath();
+    }
+    ctx.lineTo(w.x, w.y);
+    prev = w;
+  }
+
   ctx.stroke();
+  fillCircle(ctx, snake[0].wrap(bounds), SNAKE_RADIUS, HEAD_COLOR);
 }
 
 function randomApple(bounds: Vec2d) {
@@ -102,7 +118,8 @@ function update(ctx: CanvasRenderingContext2D, time: number) {
   const t = (Math.sin(0.01 * time) + 1.0) * 0.5;
   const apple_size = lerp(SNAKE_RADIUS, SNAKE_RADIUS * 0.9, t)
   fillCircle(ctx, apple, apple_size, APPLE_COLOR); // draw apple
-  drawSnake(ctx, bounds);
+  if (draw_mode === "catmull") drawSnakeCatmullRom(ctx, bounds);
+  else drawSnake(ctx, bounds);
 
   window.requestAnimationFrame((t) => update(ctx, t));
 }
@@ -142,11 +159,15 @@ function init() {
       case "ArrowRight": case "d": new_direction = DIRECTIONS.right; break;
       case "j": interpolation_factor++; break;
       case "k": interpolation_factor = Math.max(1, interpolation_factor-1); break;
+      case "c":
+        draw_mode = draw_mode === "catmull" ? "linear" : "catmull";
+        setStatusLine(`render mode: ${draw_mode === "catmull" ? "catmull-rom" : "normal"}`);
+        break;
       case "m":
         mouse_control = !mouse_control;
         setStatusLine(`mouse control: ${mouse_control ? "on" : "off"}`);
         break;
-      case "Space": case "p":
+      case " ": case "p":
         paused = !paused;
         setStatusLine(paused ? "paused" : "", null);
         break;

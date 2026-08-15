@@ -13,6 +13,10 @@ export default class Vec2d implements Point {
     this.y = y;
   }
 
+  static fromPoint(p: Point) {
+    return new Vec2d(p.x, p.y);
+  }
+
   static fromPolar(r: number, theta: number) {
     return new Vec2d(r * Math.cos(theta), r * Math.sin(theta));
   }
