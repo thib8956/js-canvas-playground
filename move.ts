@@ -2,6 +2,8 @@ import Vec2d from "./vec.js";
 import { drawCircle, resizeCanvas } from "./common.js";
 
 const SEGMENT_SPACING = 100;
+const CIRCLE_RADIUS = 20;
+const CIRCLE_COLOR = 0xff00ff;
 
 function initTrail(pos: Vec2d, len: number) {
   return Array.from({ length: len }, (_, i) => pos.add(new Vec2d(-1, 0).scale(i * SEGMENT_SPACING)));
@@ -30,7 +32,7 @@ function update(ctx: CanvasRenderingContext2D, timestamp: number) {
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   for (const pos of trail) {
-    drawCircle(ctx, pos, 20, 0xFF00FF);
+    drawCircle(ctx, pos, CIRCLE_RADIUS, CIRCLE_COLOR);
   }
 
   window.requestAnimationFrame(t => update(ctx, t));
@@ -55,10 +57,10 @@ function updateBounce(ctx: CanvasRenderingContext2D, dt: number) {
     // update head pos
     // P_t+1 = P_t + V * t
     const newPos = trail[0].add(velocity.scale(dt));
-    if (newPos.x > ctx.canvas.width - 100) { velocity.x *= -1; newPos.x = ctx.canvas.width - 100; }
-    if (newPos.y > ctx.canvas.height - 100) { velocity.y *= -1; newPos.y = ctx.canvas.height - 100; }
-    if (newPos.x < 100) { velocity.x *= -1; newPos.x = 100; }
-    if (newPos.y < 100) { velocity.y *= -1; newPos.y = 100; }
+    if (newPos.x > ctx.canvas.width - CIRCLE_RADIUS) { velocity.x *= -1; newPos.x = ctx.canvas.width - CIRCLE_RADIUS; }
+    if (newPos.y > ctx.canvas.height - CIRCLE_RADIUS) { velocity.y *= -1; newPos.y = ctx.canvas.height - CIRCLE_RADIUS; }
+    if (newPos.x < CIRCLE_RADIUS) { velocity.x *= -1; newPos.x = CIRCLE_RADIUS; }
+    if (newPos.y < CIRCLE_RADIUS) { velocity.y *= -1; newPos.y = CIRCLE_RADIUS; }
     trail[0] = newPos;
     updateTrail();
 }
@@ -93,6 +95,7 @@ function init() {
     if (!ctx) throw new Error("unable to get canvas 2D context");
     ctx.canvas.width = ctx.canvas.clientWidth;
     ctx.canvas.height = ctx.canvas.clientHeight;
+    setStatusLine(`mode: ${mode}`);
 
     canvas.onmousemove = (evt) => {
         const {clientX, clientY} = evt;
@@ -107,12 +110,18 @@ function init() {
       if (mode === "bounce") mode = "follow";
       else if (mode === "follow") mode = "circle";
       else if (mode === "circle") mode = "bounce";
-      console.log(mode);
+      setStatusLine(`mode: ${mode}`);
     }
 
     window.addEventListener('resize', () => resizeCanvas(ctx));
 
     window.requestAnimationFrame(t => update(ctx, t));
+}
+
+function setStatusLine(text: string) {
+  const statusLine = document.getElementById("status-line");
+  if (!statusLine) throw new Error("unable to get status line");
+  statusLine.innerText = text;
 }
 
 init();
