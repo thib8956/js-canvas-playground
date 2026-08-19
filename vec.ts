@@ -38,7 +38,12 @@ export default class Vec2d implements Point {
 
   normalize(): Vec2d {
     const len = this.length();
+    if (len === 0) return new Vec2d(0, 0); // avoid division by zero
     return new Vec2d(this.x / len, this.y / len);
+  }
+
+  neg(): Vec2d {
+    return new Vec2d(-this.x, -this.y);
   }
 
   scale(scalar: number): Vec2d {
@@ -59,6 +64,10 @@ export default class Vec2d implements Point {
 
   distance(other: Vec2d): number {
     return this.sub(other).length();
+  }
+
+  dot(other: Vec2d): number {
+    return this.x * other.x + this.y * other.y;
   }
 
   lerp(other: Vec2d, t: number): Vec2d {

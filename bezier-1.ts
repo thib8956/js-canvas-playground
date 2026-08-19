@@ -1,4 +1,4 @@
-import { Point, lerpPoint, drawCircle, drawLine, drawDashedLine, resizeCanvas } from "./common.js"
+import { Point, lerpPoint, drawCircle, drawLine, drawDashedLine, resizeCanvas, drawCurve } from "./common.js"
 
 let points: Point[] = [];
 
@@ -17,7 +17,8 @@ function update(ctx: CanvasRenderingContext2D, time: number) {
         drawDashedLine(ctx, ab, bc, 0xFF0000);
         drawCircle(ctx, ab, 1, 0xFF0000);
         drawCircle(ctx, bc, 1, 0xFF0000);
-        drawCircle(ctx, abc, 1, 0xFFFFFF);
+
+        drawCircle(ctx, abc, 1, 0xFFFFFF); // Point on the bezier curve
     } else if (points.length === 4) {
         const [a, b, c, d] = points;
         const ab = lerpPoint(a, b, p);
@@ -35,7 +36,8 @@ function update(ctx: CanvasRenderingContext2D, time: number) {
         drawCircle(ctx, cd, 1, 0xFF0000);
         drawCircle(ctx, abc, 1, 0xFFFF00);
         drawCircle(ctx, bcd, 1, 0xFFFF00);
-        drawCircle(ctx, abcd, 1, 0xFFFFFF);
+
+        drawCircle(ctx, abcd, 1, 0xFFFFFF); // Point on the bezier curve
     }
 
     for (let i = 0; i < points.length - 1; ++i) {
@@ -60,10 +62,13 @@ function init() {
     resizeCanvas(ctx); // Init canvas to full window size
 
     canvas.addEventListener("click", (evt) => {
-        const {clientX, clientY} = evt;
-        if (points.length < 4) {
-            points.push({x: clientX, y: clientY});
-        }
+      const rect = canvas.getBoundingClientRect();
+      if (points.length < 4) {
+        points.push({
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top,
+        });
+      }
     });
 
     window.addEventListener('resize', () => resizeCanvas(ctx));

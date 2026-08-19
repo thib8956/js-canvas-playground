@@ -1,3 +1,5 @@
+import { resizeCanvas } from "./common.js";
+
 let pos = { x: 0, y: 0 }
 
 function init() {
@@ -5,19 +7,24 @@ function init() {
     if (!canvas) throw new Error("unable to get canvas HTML element");
     const ctx = canvas.getContext("2d") as CanvasRenderingContext2D | null;
     if (!ctx) throw new Error("unable to get canvas 2D context");
+    resizeCanvas(ctx);
 
-    ctx.canvas.width  = window.innerWidth;
-    ctx.canvas.height = window.innerHeight;
-
-    canvas.onmousemove = (evt) => { 
-        const { clientX, clientY } = evt;
+    canvas.onmousemove = (evt) => {
+        const rect = canvas.getBoundingClientRect();
         //const index = (clientY * canvas.width + clientX) * 4;
-        /*console.log("color", 
+        /*console.log("color",
             pixels[index],
             pixels[index+1],
             pixels[index+2]);*/
-        pos = { x: clientX, y: clientY };
+        pos = {
+          x: (evt.clientX - rect.left) * canvas.width / rect.width,
+          y: (evt.clientY - rect.top) * canvas.height / rect.height,
+        };
     }
+
+    // A canvas does not normally receive resize events. Use a resize observer
+    const observer = new ResizeObserver(() => resizeCanvas(ctx));
+    observer.observe(canvas);
 
     window.requestAnimationFrame(t => update(ctx, t));
 }
@@ -34,15 +41,15 @@ function update(ctx: CanvasRenderingContext2D, timestamp: number) {
             const d1 = 6000 / ((x - width/2)*(x - width/2) + (y - height/2)*(y - height/2));
             const d2 = 8000 / ((x - pos.x)*(x - pos.x) + (y - pos.y)*(y - pos.y));
             if (d1 + d2 >= 0.90 && d1 + d2 <= 1.00) {
-                pixels[index] = 255*d1;
+                pixels[index] = 255 * d1;
                 pixels[index+1] = 0;
-                pixels[index+2] = 255*d2;
-                pixels[index+3] = 255; 
+                pixels[index+2] = 255 * d2;
+                pixels[index+3] = 255;
             } else {
-                pixels[index] = 0; 
-                pixels[index+1] = 0; 
-                pixels[index+2] = 0; 
-                pixels[index+3] = 255; 
+                pixels[index] = 0;
+                pixels[index+1] = 0;
+                pixels[index+2] = 0;
+                pixels[index+3] = 0;
             }
         }
     }
@@ -52,4 +59,3 @@ function update(ctx: CanvasRenderingContext2D, timestamp: number) {
 }
 
 init();
-

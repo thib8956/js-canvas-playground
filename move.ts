@@ -99,7 +99,8 @@ function init() {
 
     canvas.onmousemove = (evt) => {
         const {clientX, clientY} = evt;
-        target = new Vec2d(clientX, clientY);
+        const rect = canvas.getBoundingClientRect();
+        target = new Vec2d(clientX - rect.left, clientY - rect.top);
     }
 
     canvas.onclick = () => {
