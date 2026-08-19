@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .canvas-wrapper {
+            width: 90vw;
+            height: 90vh;
+            border-radius: 16px;
+            background-color: #1e293b;
+        }
+
+        #canvas {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="canvas-wrapper">
+        <canvas id="canvas" tabindex="0"></canvas>
+    </div>
+</body>
+<script src="agar.js" type="module"></script>
+</html>
