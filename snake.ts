@@ -188,13 +188,13 @@ function setStatusLine(text: string, timeout_ms: number | null = 2000) {
     throw new Error("unable to get status line HTML element");
   }
   if (status_line_timeout_id) {
-    clearTimeout(status_line_timeout_id);
+    window.clearTimeout(status_line_timeout_id);
     status_line_timeout_id = undefined;
   }
   status_line.innerText = text;
 
   if (timeout_ms != null) {
-    status_line_timeout_id = setTimeout(() => {
+    status_line_timeout_id = window.setTimeout(() => {
       status_line.innerText = "";
       status_line_timeout_id = undefined;
     }, timeout_ms);
