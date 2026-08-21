@@ -82,7 +82,11 @@ export default class Vec2d implements Point {
     );
   }
 
-  wrap(bounds: Vec2d) {
+  wrap(bounds: Vec2d): Vec2d {
     return new Vec2d(trueMod(this.x, bounds.x), trueMod(this.y, bounds.y));
+  }
+
+  rotateLeft(): Vec2d {
+    return new Vec2d(-this.y, this.x);
   }
 }
